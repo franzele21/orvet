@@ -4,8 +4,8 @@ def decoder(program):
     output_program = ""
 
     # looking for "for" loop
-    # they must be in format "f[<var>;<iterable>]{...}" or "f[<var>;<begin>;<end>]{}""
-    for_pattern = r"f\[([A-Za-z]+)((;[a-zA-Z0-9]+){1,2})\](.*?)\|f"
+    # they must be in format "f[<var>;<iterable>]...|" or "f[<var>;<begin>;<end>]...|""
+    for_pattern = r"f\[([A-Za-z]+)((;[a-zA-Z0-9]+){1,2})\](.*?)\|"
     if re.match(for_pattern, program):
         for_loop = re.search(for_pattern, program)
         argument = for_loop.group(2)[1:].split(";")
