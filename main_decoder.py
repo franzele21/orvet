@@ -17,7 +17,7 @@ PATTERN_DICT = {
 
 
 program = "f[i;2;30]i[i<0]print(i)||"
-program = "i=3i[i<4]print(i);print(\"oui\")"
+program = "i=3i[i>4]print(\"oui\")|q=0i[i<4]print(i);print(q)|print(q+i);print(i*q)"
 #program = "print(\"oui\")"
 
 output_program = ""
@@ -63,8 +63,13 @@ def decode(program, output_prgm="", number_of_tab = 0):
         f_m_pattern = min(first_match, key=first_match.get) # get the first occurence
         f_m_index = first_match[f_m_pattern]
 
-        output_prgm += "\t" * number_of_tab + program[0:f_m_index[0]] + "\n"
-
+        tmp_program = "\n".join(program[0:f_m_index[0]].split(";")).split("|")
+        for line in tmp_program:
+            line = "\t" * number_of_tab + line
+            line = line.replace("\n", ("\n"+"\t"*number_of_tab))
+            output_prgm += line + "\n"
+            number_of_tab = max(0, number_of_tab-1)
+        
         output_prgm += "\t" * number_of_tab + translator(f_m_pattern, program[f_m_index[0]:f_m_index[1]+1]) + "\n"
         number_of_tab += 1
         
@@ -72,8 +77,15 @@ def decode(program, output_prgm="", number_of_tab = 0):
         return decode(program[f_m_index[1]:], output_prgm, number_of_tab)
 
     elif len(program) > 0:
-        spacing = "\n" + "\t" * number_of_tab
-        output_prgm += "\t" * number_of_tab + spacing.join(program.split(";"))
+        tmp_program = "\n".join(program.split(";")).split("|")
+        print(tmp_program)
+        
+        for line in tmp_program:
+            line= "\t" * number_of_tab + line
+            line = line.replace("\n", ("\n"+"\t"*number_of_tab))
+            output_prgm += line + "\n"
+            number_of_tab -= 1
+
         return output_prgm
     else:
         return output_prgm
