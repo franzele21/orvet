@@ -2,10 +2,10 @@ import re
 
 # for loop format:
 # f[<var>;<min>;<max>]...| / f[<var>;<iterable>]...|
-FOR_LOOP_PATTERN = "f\[([A-Za-z]+)((;[a-zA-Z0-9]+){1,2})\]"
+FOR_LOOP_PATTERN = "f\[([A-Za-z]+)((;[\-a-zA-Z0-9]+){1,2})\]"
 # if condition format:
 # i[<var><condition><var>]...|
-IF_CONDI_PATTERN = "i\[([A-Za-z0-9.])+([=><!])([A-Za-z0-9.])+\]"
+IF_CONDI_PATTERN = "i\[([A-Za-z0-9.]+)([=><!])([A-Za-z0-9.]+)\]"
 
 PRINT_PATTERN = "p\[(.*?)\]"
 
@@ -16,8 +16,14 @@ PATTERN_DICT = {
 }
 
 
-program = "f[i;2;30]i[i<0]print(i)||"
-program = "i=3i[i>4]print(\"oui\")|q=0i[i<4]print(i);print(q)|print(q+i);print(i*q)"
+program = "f[i;-2;30]i[i<20]print(i)||print(i)"
+"""
+for i in range(2, 30):
+    if i<20:
+        print(i)
+print(i)
+"""
+#program = "i=3i[i>4]print(\"oui\")|q=0i[i<4]print(i);print(q)|print(q+i);print(i*q)"
 """
 i=3
 if i > 4:
@@ -55,12 +61,27 @@ def translator(pattern, prgm, normal_context=True):
         case "if":
             if_condition = re.match(IF_CONDI_PATTERN, prgm)
             condition = f"{change_type(if_condition.group(1))} {condition_translator(if_condition.group(2))} {change_type(if_condition.group(3))}"
+            print(condition)
             statement = "if " + condition + ":" if normal_context else ""
 
             return statement
 
         case "for":
-            pass
+            for_loop = re.match(FOR_LOOP_PATTERN, prgm)
+            argument = for_loop.group(2)[1:].split(";")
+            if len(argument) > 1:
+                parse_str = f"range({int(argument[0])}, {int(argument[1])})"
+            else:
+                argument = change_type(argument)
+                if isinstance(argument, int):
+                    parse_str = f"range({argument})"
+                else:
+                    parse_str = f"{argument}"
+            
+            parse_str = f"for {for_loop.group(1)} in {parse_str}" + ":" if normal_context else ""
+
+            return parse_str
+
         case "print":
             pass
         case _:
@@ -75,13 +96,14 @@ def decode(program, output_prgm="", number_of_tab = 0):
         f_m_index = first_match[f_m_pattern]
 
         tmp_program = "\n".join(program[0:f_m_index[0]].split(";")).split("|")
-        for line in tmp_program:
-            line = "\t" * number_of_tab + line
-            line = line.replace("\n", ("\n"+"\t"*number_of_tab))
-            output_prgm += line + "\n"
-            number_of_tab = max(0, number_of_tab-1)
+        if tmp_program != [""]:
+            for line in tmp_program:
+                line = "\t" * number_of_tab + line
+                line = line.replace("\n", ("\n"+"\t"*number_of_tab))
+                output_prgm += line + "\n"
+                number_of_tab = max(0, number_of_tab-1)
         
-        output_prgm += "\t" * number_of_tab + translator(f_m_pattern, program[f_m_index[0]:f_m_index[1]+1]) + "\n"
+        output_prgm += "\t" * number_of_tab + translator(f_m_pattern, program[f_m_index[0]:f_m_index[1]]) + "\n"
         number_of_tab += 1
         
         
@@ -89,7 +111,6 @@ def decode(program, output_prgm="", number_of_tab = 0):
 
     elif len(program) > 0:
         tmp_program = "\n".join(program.split(";")).split("|")
-        print(tmp_program)
         
         for line in tmp_program:
             line= "\t" * number_of_tab + line
