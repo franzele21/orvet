@@ -18,6 +18,17 @@ PATTERN_DICT = {
 
 program = "f[i;2;30]i[i<0]print(i)||"
 program = "i=3i[i>4]print(\"oui\")|q=0i[i<4]print(i);print(q)|print(q+i);print(i*q)"
+"""
+i=3
+if i > 4:
+        print("oui")
+q=0
+if i < 4:
+        print(i)
+        print(q)
+print(q+i)
+print(i*q)
+"""
 #program = "print(\"oui\")"
 
 output_program = ""
