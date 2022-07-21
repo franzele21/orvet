@@ -7,7 +7,7 @@ FOR_LOOP_PATTERN = "f\[([A-Za-z]+)((;[\-a-zA-Z0-9]+){1,2})\]"
 # i[<var><condition><var>]...|
 IF_CONDI_PATTERN = "i\[([A-Za-z0-9.]+)([=><!])([A-Za-z0-9.]+)\]"
 
-PRINT_PATTERN = "p\[(.*?)\]"
+PRINT_PATTERN = "p\[(.*)\]"
 
 PATTERN_DICT = {
     "for": FOR_LOOP_PATTERN,
@@ -16,7 +16,7 @@ PATTERN_DICT = {
 }
 
 
-program = "f[i;-2;30]i[i<20]print(i)||print(i)"
+program = "f[i;-2;30]i[i<20]p[i]||p[i]"
 """
 for i in range(2, 30):
     if i<20:
@@ -35,7 +35,7 @@ if i < 4:
 print(q+i)
 print(i*q)
 """
-#program = "print(\"oui\")"
+program = "p[[x for x in range(200) if x%20==0]]"
 
 output_program = ""
 
@@ -83,7 +83,11 @@ def translator(pattern, prgm, normal_context=True):
             return parse_str
 
         case "print":
-            pass
+            print_statement = re.match(PRINT_PATTERN, prgm)
+            argument = print_statement.group(1)
+
+            return f"print({argument})"
+
         case _:
             return prgm
 
